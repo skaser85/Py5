@@ -72,7 +72,7 @@ class Mover():
 
     def display(self):
         self.py5.stroke(0)
-        self.py5.fill(100)
+        self.py5.fill(100, 100, 100, 100)
         self.py5.rect_mode(self.py5.CENTER)
         self.py5.push_matrix()
         self.py5.translate(self.location.x, self.location.y)

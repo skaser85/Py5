@@ -20,8 +20,10 @@ class Py5():
         self.running = True
         self.background_set = False
         self.background_color = (0, 0, 0)
+        self._stroke = True
         self.stroke_size = 0
         self.stroke_color = (0, 0, 0)
+        self._fill = True
         self.fill_color = (0, 0, 0, 255)
         self.framerate = 60
         self.rotate_amt = 0
@@ -186,19 +188,26 @@ class Py5():
                 index = i + k * self.width
                 self.surface.set_at((i, k), pixels[index])
 
-    def stroke(self, r, g=None, b=None):
+    def stroke(self, r, g=None, b=None, a=None):
         """
         Sets the stroke color.
         """
         if g and b is None:
             Py5.log_print('If function is called with more than 1 arg, it must be called with all 3', 'stroke', 'Py5')
             return
-        if g is not None and b is not None:
-            self.stroke_color = (r, g, b)
+        if g is not None and b is not None and a is not None:
+            self.stroke_color = (r, g, b, a)
+        elif g is not None and b is not None:
+            self.stroke_color = (r, g, b, 255)
         else:
-            self.stroke_color = (r, r, r)
+            if isinstance(r, tuple):
+                self.stroke_color = r
+            else:
+                self.stroke_color = (r, r, r, 255)
         if self.stroke_size < 0:
             self.stroke_size = 0
+            self._stroke = False
+        self._stroke = True
 
     def stroke_weight(self, sw):
         """
@@ -211,12 +220,14 @@ class Py5():
         Turns off drawing a stroke around shapes.
         """
         self.stroke_size = 0
+        self._stroke = False
 
     def no_fill(self):
         """
         Turns off filling in shapes.
         """
-        self.stroke_size = 1
+        self._fill = False
+        self.strok = True
 
     def fill(self, r, g=None, b=None, a=None):
         """
@@ -225,15 +236,16 @@ class Py5():
         if g and b is None:
             Py5.log_print('If function is called with more than 1 arg, it must be called with all 3', 'fill', 'Py5')
             return
-        if g is not None and b is not None:
-            self.fill_color = (r, g, b, 255)
-        elif g is not None and b is not None and a is not None:
+        if g is not None and b is not None and a is not None:
             self.fill_color = (r, g, b, a)
+        elif g is not None and b is not None:
+            self.fill_color = (r, g, b, 255)
         else:
             if isinstance(r, tuple):
                 self.fill_color = r
             else:
                 self.fill_color = (r, r, r, 255)
+        self._fill = True
 
     def rect_mode(self, mode):
         # at some point, we'll support corners and radius modes
@@ -276,11 +288,10 @@ class Py5():
             x -= (w/2)
             y -= (h/2)
         rect = (x, y, w, h)
-        # pygame.draw.rect(self.surface, self.fill_color, (x, y, w, h))
-        shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
-        pygame.draw.rect(shape_surf, self.fill_color, shape_surf.get_rect())
-        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
-        self.surface.blit(shape_surf, rect)
+        if self._fill:
+            self.draw_rect_fill(rect)
+        if self._stroke:
+            self.draw_rect_border(rect)
 
     def line(self, x1, y1, x2, y2):
         """
@@ -292,23 +303,28 @@ class Py5():
         y2 += self.translate_y
         pygame.draw.line(self.surface, self.fill_color, (x1, y1), (x2, y2))
 
-        
+    def draw_rect_fill(self, rect):
+        self.draw_rect_alpha(rect)
 
-    # def draw_rect_alpha(surface, color, rect):
-    #     shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
-    #     pygame.draw.rect(shape_surf, color, shape_surf.get_rect())
-    #     surface.blit(shape_surf, rect)
+    def draw_rect_border(self, rect):
+        self.draw_rect_alpha(rect, False)
 
-    # def draw_rect_alpha_border(surface, color, rect, border_width):
-    #     shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
-    #     pygame.draw.rect(shape_surf, color, shape_surf.get_rect(), border_width)
-    #     surface.blit(shape_surf, rect)
+    def draw_rect_alpha(self, rect, fill=True):
+        shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
+        shape_surf.set_colorkey(self.background_color)
+        if fill:
+            pygame.draw.rect(shape_surf, self.fill_color, shape_surf.get_rect())
+        else:
+            pygame.draw.rect(shape_surf, self.stroke_color, shape_surf.get_rect(), self.stroke_size)
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=(rect[0], rect[1]))
+        self.surface.blit(shape_surf, shape_rect)
 
-    # def draw_circle_alpha(surface, color, center, radius):
-    #     target_rect = pygame.Rect(center, (0, 0)).inflate((radius * 2, radius * 2))
-    #     shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
-    #     pygame.draw.circle(shape_surf, color, (radius, radius), radius)
-    #     surface.blit(shape_surf, target_rect)
+    def draw_circle_alpha(self, surface, color, center, radius):
+        target_rect = pygame.Rect(center, (0, 0)).inflate((radius * 2, radius * 2))
+        shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+        pygame.draw.circle(shape_surf, color, (radius, radius), radius)
+        surface.blit(shape_surf, target_rect)
 
     def push_matrix(self):
         self.old_translate_x = self.translate_x
@@ -524,7 +540,7 @@ class Py5():
                 self.translate_y = 0
                 self.stroke_size = 1
                 self.stroke_color = (0, 0, 0)
-                self.fill_color = (0, 0, 0)
+                self.fill_color = (0, 0, 0, 255)
 
                 draw_func()
 
@@ -535,13 +551,6 @@ class Py5():
                     self.surface.blit(t['rendered'], (x, y))
 
                 self.screen.blit(self.surface, (0, 0))
-
-                # do rotation
-                # blitted_surf = self.screen.blit(self.surface, (0, 0))
-                # rot_surf = pygame.transform.rotate(self.surface, self.rotate_amt)
-                # rot_surf_rect = rot_surf.get_rect()
-                # rot_surf_rect.center = blitted_surf.center
-                # self.screen.blit(rot_surf, rot_surf_rect)
 
 
                 # Flip the display
