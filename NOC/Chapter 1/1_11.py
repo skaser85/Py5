@@ -10,7 +10,7 @@ py5 = Py5()
 class Mover():
     def __init__(self, py5):
         self.py5 = py5
-        self.location = Py5.create_vector(Py5.random(0, py5.width), Py5.random(0, py5.height))
+        self.location = Py5.create_vector(Py5.random_int(py5.width), Py5.random_int(py5.height))
         self.velocity = Py5.create_vector(0, 0)
         self.acceleration = Py5.create_vector(-0.001, 0.01)
         self.top_speed = 4
