@@ -261,9 +261,10 @@ class Py5():
         if self.RECT_MODE == 'center':
             x -= (size/2)
             y -= (size/2)
-        pygame.draw.circle(self.surface, self.fill_color, (x, y), size, 0)
-        if self.stroke_size > 0:
-            pygame.draw.circle(self.surface, self.stroke_color, (x, y), size, self.stroke_size)
+        if self._fill:
+            self.draw_circle_fill((x, y), size)
+        if self._stroke:
+            self.draw_circle_border((x, y), size)
 
     def ellipse(self, x, y, size_x, size_y):
         """
@@ -320,11 +321,22 @@ class Py5():
         shape_rect = shape_surf.get_rect(center=(rect[0], rect[1]))
         self.surface.blit(shape_surf, shape_rect)
 
-    def draw_circle_alpha(self, surface, color, center, radius):
+    def draw_circle_fill(self, center, radius):
+        self.draw_circle_alpha(center, radius)
+
+    def draw_circle_border(self, center, radius):
+        self.draw_circle_alpha(center, radius, False)
+
+    def draw_circle_alpha(self, center, radius, fill=True):
         target_rect = pygame.Rect(center, (0, 0)).inflate((radius * 2, radius * 2))
         shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
-        pygame.draw.circle(shape_surf, color, (radius, radius), radius)
-        surface.blit(shape_surf, target_rect)
+        if fill:
+            pygame.draw.circle(shape_surf, self.fill_color, (radius, radius), radius)
+        else:
+            pygame.draw.circle(shape_surf, self.stroke_color, (radius, radius), radius, self.stroke_size)
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=center)
+        self.surface.blit(shape_surf, shape_rect)
 
     def push_matrix(self):
         self.old_translate_x = self.translate_x
