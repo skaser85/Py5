@@ -37,6 +37,7 @@ class Py5():
         self.fonts = []
         self.font_size = 28
         self.text_to_render = []
+        self.vertices = []
         # CONSTANTS
         #  FONT
         self.NORMAL = 'normal'
@@ -227,7 +228,7 @@ class Py5():
         Turns off filling in shapes.
         """
         self._fill = False
-        self.strok = True
+        self._stroke = True
 
     def fill(self, r, g=None, b=None, a=None):
         """
@@ -275,9 +276,10 @@ class Py5():
         if self.RECT_MODE == 'center':
             x -= (size_x/2)
             y -= (size_y/2)
-        pygame.draw.ellipse(self.surface, self.fill_color, (x, y, size_x, size_y), 0)
-        if self.stroke_size > 0:
-            pygame.draw.ellipse(self.surface, self.stroke_color, (x, y, size_x, size_y), self.stroke_size)
+        if self._fill:
+            self.draw_ellipse_fill(x, y, size_x, size_y)
+        if self._stroke:
+            self.draw_ellipse_border(x, y, size_x, size_y)
 
     def rect(self, x, y, w, h):
         """
@@ -328,7 +330,7 @@ class Py5():
         self.draw_circle_alpha(center, radius, False)
 
     def draw_circle_alpha(self, center, radius, fill=True):
-        target_rect = pygame.Rect(center, (0, 0)).inflate((radius * 2, radius * 2))
+        target_rect = pygame.Rect((center), (0, 0)).inflate((radius * 2, radius * 2))
         shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
         if fill:
             pygame.draw.circle(shape_surf, self.fill_color, (radius, radius), radius)
@@ -337,6 +339,54 @@ class Py5():
         shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
         shape_rect = shape_surf.get_rect(center=center)
         self.surface.blit(shape_surf, shape_rect)
+
+    def draw_ellipse_fill(self, x, y, rx, ry):
+        self.draw_ellipse_alpha(x, y , rx, ry)
+
+    def draw_ellipse_border(self, x, y, rx, ry):
+        self.draw_ellipse_alpha(x, y, rx, ry, False)
+
+    def draw_ellipse_alpha(self, x, y, rx, ry, fill=True):
+        target_rect = pygame.Rect((x, y), (0, 0)).inflate((rx * 2, ry * 2))
+        shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+        if fill:
+            pygame.draw.ellipse(shape_surf, self.fill_color, (x, y, rx, ry))
+        else:
+            pygame.draw.ellipse(shape_surf, self.stroke_color, (x, y, rx, ry), self.stroke_size)
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=(x,y))
+        self.surface.blit(shape_surf, shape_rect)
+
+    def draw_polygon_fill(self):
+        self.draw_polygon_alpha()
+
+    def draw_polygon_border(self):
+        self.draw_polygon_alpha(False)
+
+    def draw_polygon_alpha(self, fill=True):
+        lx, ly = zip(*self.vertices)
+        min_x, min_y, max_x, max_y = min(lx), min(ly), max(lx), max(ly)
+        target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+        shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+        if fill:
+            pygame.draw.polygon(shape_surf, self.fill_color, [(x - min_x, y - min_y) for x, y in self.vertices])
+        else:
+            pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
+        self.surface.blit(shape_surf, target_rect)
+
+    def begin_shape(self):
+        self.vertices = []
+
+    def end_shape(self):
+        # probably need to pay attention to whether this needs to be CLOSED or not
+        if len(self.vertices) > 0:
+            if self._fill:
+                self.draw_polygon_fill()
+            if self._stroke:
+                self.draw_polygon_border()
+
+    def vertex(self, x, y):
+        self.vertices.append((x, y))
 
     def push_matrix(self):
         self.old_translate_x = self.translate_x
@@ -553,6 +603,9 @@ class Py5():
                 self.stroke_size = 1
                 self.stroke_color = (0, 0, 0)
                 self.fill_color = (0, 0, 0, 255)
+                self._fill = False
+                self._stroke = False
+                self.vertices = []
 
                 draw_func()
 
