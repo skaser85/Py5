@@ -277,10 +277,14 @@ class Py5():
         if self.RECT_MODE == 'center':
             x -= (size_x/2)
             y -= (size_y/2)
+        # @FIXME: for reasons that i am unable to work out, i can't get the alpha ellipses to draw anything
+        # to the screen at all
         if self._fill:
-            self.draw_ellipse_fill(x, y, size_x, size_y)
+            pygame.draw.ellipse(self.surface, self.fill_color, (x, y, size_x, size_y))
+            # self.draw_ellipse_fill(x, y, size_x, size_y)
         if self._stroke:
-            self.draw_ellipse_border(x, y, size_x, size_y)
+            pygame.draw.ellipse(self.surface, self.stroke_color, (x, y, size_x, size_y), self.stroke_size)
+            # self.draw_ellipse_border(x, y, size_x, size_y)
 
     def rect(self, x, y, w, h):
         """
@@ -305,7 +309,7 @@ class Py5():
         y1 += self.translate_y
         x2 += self.translate_x
         y2 += self.translate_y
-        pygame.draw.line(self.surface, self.fill_color, (x1, y1), (x2, y2))
+        pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
 
     def draw_rect_fill(self, rect):
         self.draw_rect_alpha(rect)
