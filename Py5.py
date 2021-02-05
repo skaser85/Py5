@@ -2,6 +2,7 @@ import random
 import math
 import pygame
 import functools
+import inspect
 import numpy
 from Vector import Vector
 
@@ -32,12 +33,18 @@ class Py5():
         self.translate_y = 0
         self.old_translate_x = 0
         self.old_translate_y = 0
+        self.scl = 1
         self.pressed_keys = []
         self.font = None
         self.fonts = []
         self.font_size = 28
         self.text_to_render = []
         self.vertices = []
+        self.should_loop = True
+        self.do_redraw = False
+        self.redraw_surface = None
+        self.mouse_click_func = None
+        self.first_frame_displayed = False
         # CONSTANTS
         #  FONT
         self.NORMAL = 'normal'
@@ -102,6 +109,8 @@ class Py5():
         self.height = h
         self.screen = pygame.display.set_mode([w, h])
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA)
+        self.redraw_surface = pygame.Surface((w, h), pygame.SRCALPHA)
+        pygame.display.set_caption('Py5 sketch')
 
     def background(self, r, g=None, b=None):
         """
@@ -115,6 +124,15 @@ class Py5():
             self.background_color = (r, g, b)
         else:
             self.background_color = (r, r, r)
+
+    def no_loop(self):
+        self.should_loop = False
+
+    def loop(self):
+        self.should_loop = True
+
+    def redraw(self):
+        self.do_redraw = True
 
     def load_font(self, path, name):
         pygame.font.init()
@@ -215,7 +233,7 @@ class Py5():
         """
         Sets the stroke weight.
         """
-        self.stroke_size = sw
+        self.stroke_size = int(sw * self.scl)
 
     def no_stroke(self):
         """
@@ -260,6 +278,7 @@ class Py5():
         """
         x += self.translate_x
         y += self.translate_y
+        size *= self.scl
         if self.RECT_MODE == 'center':
             x -= (size/2)
             y -= (size/2)
@@ -274,6 +293,8 @@ class Py5():
         """
         x += self.translate_x
         y += self.translate_y
+        size_x *= self.scl
+        size_y *= self.scl
         if self.RECT_MODE == 'center':
             x -= (size_x/2)
             y -= (size_y/2)
@@ -292,6 +313,8 @@ class Py5():
         """
         x += self.translate_x
         y += self.translate_y
+        self.w *= self.scl
+        self.h *= self.scl
         if self.RECT_MODE == 'center':
             x -= (w/2)
             y -= (h/2)
@@ -413,6 +436,9 @@ class Py5():
         self.old_translate_y = 0
         self.old_rotate_amt = 0
 
+    def scale(self, scl):
+        self.scl = scl
+
     def translate(self, x, y):
         """
         Adds the passed-in values to the translation values.
@@ -448,6 +474,9 @@ class Py5():
         """
         Returns a boolean that says whether the left mouse button is up.
         """
+        return self.MOUSE_BUTTON_UP
+
+    def mouse_clicked(self):
         return self.MOUSE_BUTTON_UP
 
     def mouse_pressed(self):
@@ -558,6 +587,9 @@ class Py5():
         """
         return random.uniform(mn, mx)
 
+    def mouse_click(self, func):
+        self.mouse_click_func = func
+
     def draw(self, draw_func):
         """
         Draws the objects from the instances draw function to the screen.
@@ -617,15 +649,26 @@ class Py5():
                 self._stroke = False
                 self.vertices = []
 
-                draw_func()
+                if self.mouse_clicked() and self.mouse_click_func is not None:
+                    self.mouse_click_func()
 
-                # Draw text
-                for t in self.text_to_render:
-                    x = t['x'] + self.translate_x
-                    y = t['y'] + self.translate_y
-                    self.surface.blit(t['rendered'], (x, y))
+                if pygame.display.get_caption() == ('Py5 sketch', 'Py5 sketch'):
+                    pygame.display.set_caption(f'Py5 -> {inspect.getfile(draw_func)}')
 
-                self.screen.blit(self.surface, (0, 0))
+                # @FIXME: this doesn't work to show the first frame if no_loop
+                if (self.should_loop or self.do_redraw) or (not self.first_frame_displayed):
+                    draw_func()
+                    # Draw text
+                    for t in self.text_to_render:
+                        x = t['x'] + self.translate_x
+                        y = t['y'] + self.translate_y
+                        self.surface.blit(t['rendered'], (x, y))
+                    self.redraw_surface = pygame.Surface.copy(self.surface)
+                    self.screen.blit(self.surface, (0, 0))
+                    self.do_redraw = False
+                    self.first_frame_displayed = True
+                else:
+                    self.screen.blit(self.redraw_surface, (0, 0))
 
 
                 # Flip the display
@@ -635,7 +678,7 @@ class Py5():
                 self.clock.tick(self.framerate)
 
                 self.pressed_keys = pygame.key.get_pressed()
-                
+
                 self.text_to_render = []
 
             # Done! Time to quit.
