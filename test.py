@@ -37,18 +37,29 @@ def draw():
 
     py5.fill(255, 0, 255, 75)
     # py5.stroke(255, 255, 255, 255)
-    py5.begin_shape()
-    py5.vertex(py5.width/2, py5.height/2)
-    py5.vertex(py5.width/2 + 50, py5.height/2 + 100)
-    py5.vertex(py5.width/2 - 50, py5.height/2 + 100)
-    py5.end_shape()
+    # py5.begin_shape()
+    # py5.vertex(py5.width/2, py5.height/2)
+    # py5.vertex(py5.width/2 + 50, py5.height/2 + 100)
+    # py5.vertex(py5.width/2 - 50, py5.height/2 + 100)
+    # py5.end_shape()
     py5.fill(255, 0, 0, 75)
-    # py5.stroke(255, 255, 255, 255)
+    # py5.stroke_weight(3)
+    py5.stroke(255, 255, 255, 255)
+    # py5.no_fill()
+    py5.no_stroke()
+    x = py5.width/2 + 50
+    y = py5.height/2 + 100
     py5.begin_shape()
-    py5.vertex(py5.width/2 + 50, py5.height/2 + 50)
-    py5.vertex(py5.width/2 + 75, py5.height/2 + 100)
-    py5.vertex(py5.width/2 - 75, py5.height/2 + 100)
-    py5.end_shape()
+    py5.vertex(x, y)
+    x += 50
+    py5.vertex(x, y)
+    y += 50
+    py5.vertex(x, y)
+    x -= 50
+    py5.vertex(x, y)
+    y -= 50
+    # py5.vertex(x, y)
+    py5.end_shape(py5.CLOSE)
 
 
 setup()

@@ -92,6 +92,7 @@ class Py5():
         self.RECT_MODE = 'corner'
         self.CORNER = 'corner'
         self.CENTER = 'center'
+        self.CLOSE = 'CLOSE'
 
     def create_screen(self, w, h):
         """
@@ -371,14 +372,19 @@ class Py5():
         if fill:
             pygame.draw.polygon(shape_surf, self.fill_color, [(x - min_x, y - min_y) for x, y in self.vertices])
         else:
+            # @Hack: need to do this in order to get all of the lines to show up; if it's anything less than 3, some
+            # of the lines just won't show up
+            if self.stroke_size < 3:
+                self.stroke_size = 3
             pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
         self.surface.blit(shape_surf, target_rect)
 
     def begin_shape(self):
         self.vertices = []
 
-    def end_shape(self):
-        # probably need to pay attention to whether this needs to be CLOSED or not
+    def end_shape(self, close=None):
+        if close == self.CLOSE:
+            self.vertices.append(self.vertices[0])
         if len(self.vertices) > 0:
             if self._fill:
                 self.draw_polygon_fill()
