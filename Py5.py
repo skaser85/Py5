@@ -108,13 +108,13 @@ class Py5():
         """
         Creates a window to draw on.
         """
+        py5_app = 'py5_app'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
         self.width = w
         self.height = h
         self.screen = pygame.display.set_mode([w, h])
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA)
         self.redraw_surface = pygame.Surface((w, h), pygame.SRCALPHA)
-        py5_app = 'py5_app'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
         icon = pygame.image.load(r'icon\Py5_icon.png')
         pygame.display.set_caption('Py5 sketch')
         pygame.display.set_icon(icon)
