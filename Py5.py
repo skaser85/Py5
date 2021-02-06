@@ -34,6 +34,7 @@ class Py5():
         self.old_translate_x = 0
         self.old_translate_y = 0
         self.scl = 1
+        self.scl_int = 1
         self.pressed_keys = []
         self.font = None
         self.fonts = []
@@ -45,6 +46,7 @@ class Py5():
         self.redraw_surface = None
         self.mouse_click_func = None
         self.first_frame_displayed = False
+        self.frames = 0
         # CONSTANTS
         #  FONT
         self.NORMAL = 'normal'
@@ -313,8 +315,8 @@ class Py5():
         """
         x += self.translate_x
         y += self.translate_y
-        self.w *= self.scl
-        self.h *= self.scl
+        w *= self.scl
+        h *= self.scl
         if self.RECT_MODE == 'center':
             x -= (w/2)
             y -= (h/2)
@@ -332,7 +334,40 @@ class Py5():
         y1 += self.translate_y
         x2 += self.translate_x
         y2 += self.translate_y
+        # line = pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        # line.width *= self.scl
+        # line.height *= self.scl
+        length = self.dist(x1, y2, x2, y2)
+        length_scl = length * self.scl
+        p1 = Vector(x1, y1)
+        p2 = Vector(x2, y2)
+        if length_scl > length:
+            p1.sub((length_scl/2))
+            p2.add((length_scl/2))
+            x1 -= (length_scl/2)
+            y1 -= (length_scl/2)
+            x2 += (length_scl/2)
+            y2 += (length_scl/2)
+        else:
+            p1.add((length_scl/2))
+            p2.sub((length_scl/2))
+            x1 += (length_scl/2)
+            y1 += (length_scl/2)
+            x2 -= (length_scl/2)
+            y2 -= (length_scl/2)
         pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        pygame.draw.line(self.surface, (0, 255, 0), (p1.x, p1.y), (p2.x, p2.y), self.stroke_size)
+        # self.draw_line_alpha(line, x1, y1, x2, y2)
+
+    def draw_line_alpha(self, line, x1, y1, x2, y2):
+        shape_surf = pygame.Surface((line.w, line.h), pygame.SRCALPHA)
+        shape_surf.set_colorkey(self.background_color)
+        pygame.draw.line(shape_surf, (0, 255, 0, 255), (line.x, line.y), (line.x, line.y))
+        # @FIXME: this scaling doesn't actually work
+        # shape_surf = pygame.transform.scale(shape_surf, (self.scl_int, self.scl_int))
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=line.center)
+        self.surface.blit(shape_surf, shape_rect)
 
     def draw_rect_fill(self, rect):
         self.draw_rect_alpha(rect)
@@ -404,7 +439,10 @@ class Py5():
             if self.stroke_size < 3:
                 self.stroke_size = 3
             pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
-        self.surface.blit(shape_surf, target_rect)
+        shape_surf = pygame.transform.scale(shape_surf, (self.scl_int * target_rect.w, self.scl_int * target_rect.h))
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=target_rect.center)
+        self.surface.blit(shape_surf, shape_rect)
 
     def begin_shape(self):
         self.vertices = []
@@ -438,6 +476,7 @@ class Py5():
 
     def scale(self, scl):
         self.scl = scl
+        self.scl_int = int(scl)
 
     def translate(self, x, y):
         """
@@ -666,7 +705,9 @@ class Py5():
                     self.redraw_surface = pygame.Surface.copy(self.surface)
                     self.screen.blit(self.surface, (0, 0))
                     self.do_redraw = False
-                    self.first_frame_displayed = True
+                    self.frames += 1
+                    if self.frames > 1:
+                        self.first_frame_displayed = True
                 else:
                     self.screen.blit(self.redraw_surface, (0, 0))
 

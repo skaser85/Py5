@@ -60,12 +60,18 @@ picks = []
 def setup():
     py5.create_screen(600, 600)
     picks.append(Toothpick(0, 0, 1))
+    py5.no_loop()
+
+def redraw():
+    py5.redraw()
+
+py5.mouse_click(redraw)
 
 @py5.draw
 def draw():
     py5.background(255)
     py5.translate(py5.width/2, py5.height/2)
-    # py5.scale(.5)
+    # py5.scale(2)
 
     next_picks = []
 
