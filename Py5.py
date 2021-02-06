@@ -1,3 +1,4 @@
+import ctypes
 import random
 import math
 import pygame
@@ -112,7 +113,11 @@ class Py5():
         self.screen = pygame.display.set_mode([w, h])
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA)
         self.redraw_surface = pygame.Surface((w, h), pygame.SRCALPHA)
+        py5_app = 'py5_app'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
+        icon = pygame.image.load(r'icon\Py5_icon.png')
         pygame.display.set_caption('Py5 sketch')
+        pygame.display.set_icon(icon)
 
     def background(self, r, g=None, b=None):
         """
@@ -705,7 +710,7 @@ class Py5():
                     self.mouse_click_func()
 
                 if pygame.display.get_caption() == ('Py5 sketch', 'Py5 sketch'):
-                    pygame.display.set_caption(f'Py5 -> {inspect.getfile(draw_func)}')
+                    pygame.display.set_caption(f'{inspect.getfile(draw_func)}')
 
                 # @FIXME: this doesn't work to show the first frame if no_loop
                 if (self.should_loop or self.do_redraw) or (not self.first_frame_displayed):
