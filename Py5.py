@@ -337,27 +337,40 @@ class Py5():
         # line = pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
         # line.width *= self.scl
         # line.height *= self.scl
-        length = self.dist(x1, y2, x2, y2)
-        length_scl = length * self.scl
-        p1 = Vector(x1, y1)
-        p2 = Vector(x2, y2)
-        if length_scl > length:
-            p1.sub((length_scl/2))
-            p2.add((length_scl/2))
-            x1 -= (length_scl/2)
-            y1 -= (length_scl/2)
-            x2 += (length_scl/2)
-            y2 += (length_scl/2)
-        else:
-            p1.add((length_scl/2))
-            p2.sub((length_scl/2))
-            x1 += (length_scl/2)
-            y1 += (length_scl/2)
-            x2 -= (length_scl/2)
-            y2 -= (length_scl/2)
-        pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
-        pygame.draw.line(self.surface, (0, 255, 0), (p1.x, p1.y), (p2.x, p2.y), self.stroke_size)
+        #############################
+        # length = self.dist(x1, y2, x2, y2)
+        # length_scl = length * self.scl
+        # p1 = Vector(x1, y1)
+        # p2 = Vector(x2, y2)
+        # if length_scl > length:
+        #     p1.sub((length_scl/2))
+        #     p2.add((length_scl/2))
+        #     x1 -= (length_scl/2)
+        #     y1 -= (length_scl/2)
+        #     x2 += (length_scl/2)
+        #     y2 += (length_scl/2)
+        # else:
+        #     p1.add((length_scl/2))
+        #     p2.sub((length_scl/2))
+        #     x1 += (length_scl/2)
+        #     y1 += (length_scl/2)
+        #     x2 -= (length_scl/2)
+        #     y2 -= (length_scl/2)
+        # pygame.draw.line(self.surface, (0, 255, 0), (p1.x, p1.y), (p2.x, p2.y), self.stroke_size)
+        temp = pygame.Surface(self.surface.get_size())
+        line = pygame.draw.line(temp, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        line_rect = temp.get_rect()
+        temp = None
+        self.draw_line_alpha_test(line_rect, x1, y1, x2, y2)
         # self.draw_line_alpha(line, x1, y1, x2, y2)
+
+    def draw_line_alpha_test(self, line_rect, x1, y1, x2, y2):
+        shape_surf = pygame.Surface((line_rect.w, line_rect.h), pygame.SRCALPHA)
+        shape_surf.set_colorkey(self.background_color)
+        pygame.draw.line(shape_surf, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+        shape_rect = shape_surf.get_rect(center=line_rect.center)
+        self.surface.blit(shape_surf, shape_rect)
 
     def draw_line_alpha(self, line, x1, y1, x2, y2):
         shape_surf = pygame.Surface((line.w, line.h), pygame.SRCALPHA)
