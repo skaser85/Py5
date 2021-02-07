@@ -122,15 +122,12 @@ class Py5():
             pygame.display.set_caption('Py5 sketch')
             pygame.display.set_icon(icon)
             display_info = pygame.display.Info()
-            if fullscreen:
-                if fullscreen != self.FULLSCREEN:
-                    print(f'Py5 :: create_screen :: invalid value passed for the "fullscreen" agrument. Got {fullscreen} which is not the constant FULLSCREEN.')
-                else:
-                    self.width = display_info.current_w
-                    self.height = display_info.current_h
-                    self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
-                    self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-                    self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            if fullscreen or w == self.FULLSCREEN:
+                self.width = display_info.current_w
+                self.height = display_info.current_h
+                self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
+                self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
             else:
                 if w == self.WINDOW_WIDTH:
                     self.width = display_info.current_w
