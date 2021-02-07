@@ -17,6 +17,7 @@ class Py5():
         self.clock = pygame.time.Clock()
         self.width = 0
         self.height = 0
+        self.screen_created = False
         self.screen = pygame.display.init()
         self.surface = None
         self.running = True
@@ -48,6 +49,7 @@ class Py5():
         self.mouse_click_func = None
         self.first_frame_displayed = False
         self.frames = 0
+        self.resize_func = None
         # CONSTANTS
         #  FONT
         self.NORMAL = 'normal'
@@ -112,37 +114,40 @@ class Py5():
         """
         Creates a window to draw on.
         """
-        py5_app = 'py5_app'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
-        icon = pygame.image.load(r'icon\Py5_icon.png')
-        pygame.display.set_caption('Py5 sketch')
-        pygame.display.set_icon(icon)
-        display_info = pygame.display.Info()
-        if fullscreen:
-            if fullscreen != self.FULLSCREEN:
-                print(f'Py5 :: create_screen :: invalid value passed for the "fullscreen" agrument. Got {fullscreen} which is not the constant FULLSCREEN.')
+        if not self.screen_created:
+            self.screen_created = True
+            py5_app = 'py5_app'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
+            icon = pygame.image.load(r'icon\Py5_icon.png')
+            pygame.display.set_caption('Py5 sketch')
+            pygame.display.set_icon(icon)
+            display_info = pygame.display.Info()
+            if fullscreen:
+                if fullscreen != self.FULLSCREEN:
+                    print(f'Py5 :: create_screen :: invalid value passed for the "fullscreen" agrument. Got {fullscreen} which is not the constant FULLSCREEN.')
+                else:
+                    self.width = display_info.current_w
+                    self.height = display_info.current_h
+                    self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
+                    self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                    self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
             else:
-                self.width = display_info.current_w
-                self.height = display_info.current_h
-                self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
+                if w == self.WINDOW_WIDTH:
+                    self.width = display_info.current_w
+                elif isinstance(w, int):
+                    self.width = w
+                else:
+                    print(f'Py5 :: create_screen :: invalid value passed for the "w" agrument.  Got {w} which is neither an integer nor the constant WINDOW_WIDTH.')
+                if h == self.WINDOW_HEIGHT:
+                    self.height = display_info.current_h
+                elif isinstance(h, int):
+                    self.height = h
+                else:
+                    print(f'Py5 :: create_screen :: invalid value passed for the "h" agrument.  Got {h} which is neither an integer nor the constant WINDOW_HEIGHT.')
+                self.screen = pygame.display.set_mode([self.width, self.height], pygame.RESIZABLE)
                 self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
                 self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        else:
-            if w == self.WINDOW_WIDTH:
-                self.width = display_info.current_w
-            elif isinstance(w, int):
-                self.width = w
-            else:
-                print(f'Py5 :: create_screen :: invalid value passed for the "w" agrument.  Got {w} which is neither an integer nor the constant WINDOW_WIDTH.')
-            if h == self.WINDOW_HEIGHT:
-                self.height = display_info.current_h
-            elif isinstance(h, int):
-                self.height = h
-            else:
-                print(f'Py5 :: create_screen :: invalid value passed for the "h" agrument.  Got {h} which is neither an integer nor the constant WINDOW_HEIGHT.')
-            self.screen = pygame.display.set_mode([self.width, self.height])
-            self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-            self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+
 
     def background(self, r, g=None, b=None):
         """
@@ -576,6 +581,9 @@ class Py5():
         """
         return self.pressed_keys
 
+    def window_resized(self, func):
+        self.resize_func = func
+
     @staticmethod
     def log_print(msg, name, file):
         # do some kind of log, too?
@@ -722,6 +730,16 @@ class Py5():
                         self.MOUSE_BUTTON_DOWN = True
                     elif event.type == pygame.MOUSEBUTTONUP:
                         self.MOUSE_BUTTON_UP = True
+                    elif event.type == pygame.VIDEORESIZE:
+                        self.width = event.w
+                        self.height = event.h
+                        self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                        self.surface = pygame.Surface((event.w, event.h), pygame.SRCALPHA)
+                        self.redraw_surface = pygame.Surface((event.w, event.h), pygame.SRCALPHA)
+                        if self.resize_func is None:
+                            print(f'Py5 :: draw :: Window resize happened but no resize function existed.')
+                        else:
+                            self.resize_func()
                     
                 if self._MOUSE_BUTTON_WAS_DOWN and not self.MOUSE_BUTTON_UP:
                     self.MOUSE_BUTTON_DOWN = True

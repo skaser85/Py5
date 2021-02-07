@@ -42,10 +42,17 @@ penduls = []
 spacing = 10
 
 def setup():
-    py5.create_screen(py5.WINDOW_WIDTH, py5.WINDOW_HEIGHT)
+    py5.create_screen(800, 800)
     total = py5.floor(py5.height / spacing)
     for i in range(total):
         penduls.append(Pendulum(py5, py5.width/2, py5.height, spacing + i * spacing, spacing))
+
+def  handle_resize():
+    global penduls
+    penduls = []
+    setup()
+
+py5.window_resized(handle_resize)
 
 @py5.draw
 def draw():
