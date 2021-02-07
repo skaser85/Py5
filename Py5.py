@@ -103,21 +103,46 @@ class Py5():
         self.CORNER = 'corner'
         self.CENTER = 'center'
         self.CLOSE = 'CLOSE'
+        # WINDOW
+        self.FULLSCREEN = 'fullscreen'
+        self.WINDOW_WIDTH = 'window_width'
+        self.WINDOW_HEIGHT = 'window_height'
 
-    def create_screen(self, w, h):
+    def create_screen(self, w=0, h=0, fullscreen=False):
         """
         Creates a window to draw on.
         """
         py5_app = 'py5_app'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(py5_app)
-        self.width = w
-        self.height = h
-        self.screen = pygame.display.set_mode([w, h])
-        self.surface = pygame.Surface((w, h), pygame.SRCALPHA)
-        self.redraw_surface = pygame.Surface((w, h), pygame.SRCALPHA)
         icon = pygame.image.load(r'icon\Py5_icon.png')
         pygame.display.set_caption('Py5 sketch')
         pygame.display.set_icon(icon)
+        display_info = pygame.display.Info()
+        if fullscreen:
+            if fullscreen != self.FULLSCREEN:
+                print(f'Py5 :: create_screen :: invalid value passed for the "fullscreen" agrument. Got {fullscreen} which is not the constant FULLSCREEN.')
+            else:
+                self.width = display_info.current_w
+                self.height = display_info.current_h
+                self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
+                self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+                self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        else:
+            if w == self.WINDOW_WIDTH:
+                self.width = display_info.current_w
+            elif isinstance(w, int):
+                self.width = w
+            else:
+                print(f'Py5 :: create_screen :: invalid value passed for the "w" agrument.  Got {w} which is neither an integer nor the constant WINDOW_WIDTH.')
+            if h == self.WINDOW_HEIGHT:
+                self.height = display_info.current_h
+            elif isinstance(h, int):
+                self.height = h
+            else:
+                print(f'Py5 :: create_screen :: invalid value passed for the "h" agrument.  Got {h} which is neither an integer nor the constant WINDOW_HEIGHT.')
+            self.screen = pygame.display.set_mode([self.width, self.height])
+            self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
     def background(self, r, g=None, b=None):
         """
@@ -362,11 +387,13 @@ class Py5():
         #     x2 -= (length_scl/2)
         #     y2 -= (length_scl/2)
         # pygame.draw.line(self.surface, (0, 255, 0), (p1.x, p1.y), (p2.x, p2.y), self.stroke_size)
-        temp = pygame.Surface(self.surface.get_size())
-        line = pygame.draw.line(temp, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
-        line_rect = temp.get_rect()
-        temp = None
-        self.draw_line_alpha_test(line_rect, x1, y1, x2, y2)
+        # temp = pygame.Surface(self.surface.get_size())
+        # line = pygame.draw.line(temp, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        # line_rect = temp.get_rect()
+        # temp = None
+        # self.draw_line_alpha_test(line_rect, x1, y1, x2, y2)
+        # print(self.stroke_color)
+        pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
         # self.draw_line_alpha(line, x1, y1, x2, y2)
 
     def draw_line_alpha_test(self, line_rect, x1, y1, x2, y2):
@@ -643,6 +670,14 @@ class Py5():
         Returns a random float between the min and max values passed in.
         """
         return random.uniform(mn, mx)
+
+    @staticmethod
+    def sin(angle):
+        return math.sin(angle)
+
+    @staticmethod
+    def cos(angle):
+        return math.cos(angle)
 
     def mouse_click(self, func):
         self.mouse_click_func = func
