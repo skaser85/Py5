@@ -7,7 +7,7 @@ sys.path.append(grandparentdir)
 from Py5 import Py5
 py5 = Py5()
 
-rez = 5
+rez = 20
 cols = 0
 rows = 0
 field = []
