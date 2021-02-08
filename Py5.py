@@ -358,6 +358,11 @@ class Py5():
         if self._stroke:
             self.draw_rect_border(rect)
 
+    def point(self, x, y):
+        x += self.translate_x
+        y += self.translate_y
+        self.circle(x, y, self.stroke_size)
+
     def line(self, x1, y1, x2, y2):
         """
         Draws a line.
@@ -600,6 +605,10 @@ class Py5():
         Returns the value floored.
         """
         return math.floor(val)
+
+    @staticmethod
+    def ceil(val):
+        return math.ceil(val)
 
     @staticmethod
     def dist(x1, y1, x2, y2):
