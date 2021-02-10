@@ -15,6 +15,7 @@ counter = 1
 def setup():
     py5.create_screen(1024, 1024)
     # py5.create_screen(py5.FULLSCREEN)
+    py5.color_mode(py5.HSB, 360, 255, 255)
 
     for i in range(total):
         path.append(hilbert(i))
@@ -73,23 +74,10 @@ def draw():
     for p in range(1, counter):
         p1 = path[p]
         p0 = path[p-1]
-        # c = py5.map(p, 0, len(path), 0, 255)
-        # print('#########')
-        # print(p)
-        # print('---------')
-        # print(c)
-        # print('#########')
         r = p % 255
         g = (p * py5.random_int(255)) % 255
-        py5.stroke(r, g, py5.random_int(255))
+        py5.stroke(py5.random_int(255), py5.random_int(255), py5.random_int(255))
         py5.line(p1.x, p1.y, p0.x, p0.y)
-    # py5.begin_shape()
-    # for p in path:
-    #     py5.vertex(p.x, p.y)
-    # need more than 2 points - what do?
-    # for p in range(counter):
-    #     py5.vertex(path[p].x, path[p].y)
-    # py5.end_shape()
 
     counter += 50
 

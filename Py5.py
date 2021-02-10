@@ -26,7 +26,7 @@ class Py5():
         self.background_color = (0, 0, 0)
         self._stroke = True
         self.stroke_size = 0
-        self.stroke_color = (0, 0, 0)
+        self.stroke_color = pygame.Color(0, 0, 0, 255)
         self._fill = True
         self.fill_color = (0, 0, 0, 255)
         self.framerate = 60
@@ -110,6 +110,11 @@ class Py5():
         self.FULLSCREEN = 'fullscreen'
         self.WINDOW_WIDTH = 'window_width'
         self.WINDOW_HEIGHT = 'window_height'
+        # COLOR
+        self.COLOR_MODE = 'rgb'
+        self.RGB = 'rgb'
+        self.HSB = 'hsb'
+
 
     def create_screen(self, w=0, h=0, fullscreen=False):
         """
@@ -243,6 +248,16 @@ class Py5():
                 index = i + k * self.width
                 self.surface.set_at((i, k), pixels[index])
 
+    def color_mode(self, mode, max_1, max_2, max_3, max_A=255):
+        if mode in [self.RGB, self.HSB]:
+            self.COLOR_MODE = mode
+        else:
+            print(f'Py5 :: color_mode :: unexpected color mode - got {mode} - valid modes [RGB, HSB]')
+        if self._fill:
+            self.fill(max_1, max_2, max_3, max_A)
+        if self._stroke:
+            self.stroke(max_1, max_2, max_3, max_A)
+
     def stroke(self, r, g=None, b=None, a=None):
         """
         Sets the stroke color.
@@ -251,14 +266,26 @@ class Py5():
             Py5.log_print('If function is called with more than 1 arg, it must be called with all 3', 'stroke', 'Py5')
             return
         if g is not None and b is not None and a is not None:
-            self.stroke_color = (r, g, b, a)
+            if self.COLOR_MODE == 'rgb':
+                self.stroke_color = pygame.Color(r, g, b, a)
+            else:
+                self.stroke_color = pygame.Color.hsla(r, g, b)
         elif g is not None and b is not None:
-            self.stroke_color = (r, g, b, 255)
+            if self.COLOR_MODE == 'rgb':
+                self.stroke_color = pygame.Color(r, g, b, 255)
+            else:
+                self.stroke_color = pygame.Color.hsla(r, g, b)
         else:
             if isinstance(r, tuple):
-                self.stroke_color = r
+                if self.COLOR_MODE == 'rgb':
+                    self.stroke_color = pygame.Color(r[0], r[1], r[2])
+                else:
+                    self.stroke_color = pygame.Color.hsla(r[0], r[1], r[2])
             else:
-                self.stroke_color = (r, r, r, 255)
+                if self.COLOR_MODE == 'rgb':
+                    self.stroke_color = pygame.Color(r, r, r, 255)
+                else:
+                    self.stroke_color = pygame.Color.hsla(r, r, r)
         if self.stroke_size < 0:
             self.stroke_size = 0
             self._stroke = False
@@ -292,14 +319,29 @@ class Py5():
             Py5.log_print('If function is called with more than 1 arg, it must be called with all 3', 'fill', 'Py5')
             return
         if g is not None and b is not None and a is not None:
-            self.fill_color = (r, g, b, a)
-        elif g is not None and b is not None:
-            self.fill_color = (r, g, b, 255)
-        else:
-            if isinstance(r, tuple):
-                self.fill_color = r
+            if self.COLOR_MODE == 'rgb':
+                self.fill_color = pygame.Color(r, g, b, a)
             else:
-                self.fill_color = (r, r, r, 255)
+                self.fill_color = pygame.Color.hsla(r, g, b)
+        elif g is not None and b is not None:
+            if self.COLOR_MODE == 'rgb':
+                self.fill_color = pygame.Color(r, g, b, 255)
+            else:
+                self.fill_color = pygame.Color.hsla(r, g, b)
+        else:
+            if self.COLOR_MODE == 'rgb':
+                if isinstance(r, tuple):
+                    if len(r) == 3:
+                        self.fill_color = pygame.Color(r[0], r[1], r[2])
+                    elif len(r) == 4:
+                        self.fill_color = pygame.Color(r[0], r[1], r[2], r[3])
+                else:
+                    self.fill_color = pygame.Color(r, r, r, 255)
+            else:
+                if isinstance(r, tuple):
+                    self.fill_color = pygame.Color.hsla(r[0], r[1], r[2])
+                else:
+                    self.fill_color = pygame.Color.hsla(r, r, r)
         self._fill = True
 
     def rect_mode(self, mode):
