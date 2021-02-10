@@ -2,6 +2,7 @@ import ctypes
 import random
 import math
 import pygame
+from pygame import gfxdraw
 import functools
 import inspect
 import numpy
@@ -472,25 +473,44 @@ class Py5():
         shape_rect = shape_surf.get_rect(center=(x,y))
         self.surface.blit(shape_surf, shape_rect)
 
-    def draw_polygon_fill(self):
-        self.draw_polygon_alpha()
+    def draw_polygon_fill(self, closed=False):
+        self.draw_polygon_alpha(closed)
 
-    def draw_polygon_border(self):
-        self.draw_polygon_alpha(False)
+    def draw_polygon_border(self, closed=False):
+        self.draw_polygon_alpha(closed, False)
 
-    def draw_polygon_alpha(self, fill=True):
+    # def draw_polygon_alpha(self, fill=True):
+    #     lx, ly = zip(*self.vertices)
+    #     min_x, min_y, max_x, max_y = min(lx), min(ly), max(lx), max(ly)
+    #     target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+    #     shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+    #     if fill:
+    #         pygame.draw.polygon(shape_surf, self.fill_color, [(x - min_x, y - min_y) for x, y in self.vertices])
+    #     else:
+    #         # @Hack: need to do this in order to get all of the lines to show up; if it's anything less than 3, some
+    #         # of the lines just won't show up
+    #         if self.stroke_size < 3:
+    #             self.stroke_size = 3
+    #         pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
+    #     shape_surf = pygame.transform.scale(shape_surf, (self.scl_int * target_rect.w, self.scl_int * target_rect.h))
+    #     shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
+    #     shape_rect = shape_surf.get_rect(center=target_rect.center)
+    #     self.surface.blit(shape_surf, shape_rect)
+
+    def draw_polygon_alpha(self, closed=False, fill=True):
         lx, ly = zip(*self.vertices)
         min_x, min_y, max_x, max_y = min(lx), min(ly), max(lx), max(ly)
         target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
         shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
         if fill:
-            pygame.draw.polygon(shape_surf, self.fill_color, [(x - min_x, y - min_y) for x, y in self.vertices])
+            pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices])
         else:
             # @Hack: need to do this in order to get all of the lines to show up; if it's anything less than 3, some
             # of the lines just won't show up
-            if self.stroke_size < 3:
-                self.stroke_size = 3
-            pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
+            # if self.stroke_size < 3:
+            #     self.stroke_size = 3
+            pygame.draw.aalines(self.surface, self.stroke_color, closed, self.vertices, False)
+            # pygame.draw.polygon(shape_surf, self.stroke_color, [(x - min_x, y - min_y) for x, y in self.vertices], self.stroke_size)
         shape_surf = pygame.transform.scale(shape_surf, (self.scl_int * target_rect.w, self.scl_int * target_rect.h))
         shape_surf = pygame.transform.rotate(shape_surf, self.rotate_amt)
         shape_rect = shape_surf.get_rect(center=target_rect.center)
@@ -500,13 +520,23 @@ class Py5():
         self.vertices = []
 
     def end_shape(self, close=None):
-        if close == self.CLOSE:
-            self.vertices.append(self.vertices[0])
-        if len(self.vertices) > 0:
+        if len(self.vertices) > 2:
             if self._fill:
-                self.draw_polygon_fill()
+                if close == self.CLOSE:
+                    self.draw_polygon_fill(closed=True)
+                else:
+                    self.draw_polygon_fill()
             if self._stroke:
-                self.draw_polygon_border()
+                if close == self.CLOSE:
+                    self.draw_polygon_border(closed=True)
+                else:
+                    self.draw_polygon_border()
+        elif len(self.vertices) == 2:
+            self.line(self.vertices[0][0], self.vertices[0][1], self.vertices[1][0], self.vertices[1][1])
+        elif len(self.vertices) == 1:
+            self.point(self.vertices[0][0], self.vertices[0][1])
+        else:
+            print(f'Py5 :: end_shape :: insufficient data to draw shape')
 
     def vertex(self, x, y):
         self.vertices.append((x, y))
@@ -577,6 +607,9 @@ class Py5():
         """
         return self.MOUSE_BUTTON_DOWN and not self.MOUSE_BUTTON_UP
 
+    def mouse_click(self, func):
+        self.mouse_click_func = func
+
     def get_pressed_keys(self):
         """
         Returns a list of keyboard keys that were pressed during the frame.
@@ -618,7 +651,7 @@ class Py5():
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
     @staticmethod
-    def map(n, start1, stop1, start2, stop2, within_bounds):
+    def map(n, start1, stop1, start2, stop2, within_bounds=True):
         new_val = (n-start1)/(stop1-start1)*(stop2-start2)+start2
         if not within_bounds: # what even does this do?
             return new_val
@@ -693,8 +726,9 @@ class Py5():
     def cos(angle):
         return math.cos(angle)
 
-    def mouse_click(self, func):
-        self.mouse_click_func = func
+    @staticmethod
+    def pow(num, exp):
+        return math.pow(num, exp)
 
     def draw(self, draw_func):
         """
