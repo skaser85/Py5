@@ -6,7 +6,7 @@ sys.path.append(grandparentdir)
 from Py5 import Py5
 py5 = Py5()
 
-order = 6
+order = 7
 N = int(py5.pow(2, order))
 total = N * N
 path = []
@@ -14,6 +14,7 @@ counter = 1
 
 def setup():
     py5.create_screen(1024, 1024)
+    # py5.create_screen(py5.FULLSCREEN)
 
     for i in range(total):
         path.append(hilbert(i))
@@ -90,7 +91,7 @@ def draw():
     #     py5.vertex(path[p].x, path[p].y)
     # py5.end_shape()
 
-    counter += 20
+    counter += 50
 
     if counter >= len(path):
         counter = 1
