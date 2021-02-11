@@ -15,7 +15,6 @@ counter = 1
 def setup():
     py5.create_screen(1024, 1024)
     # py5.create_screen(py5.FULLSCREEN)
-    py5.color_mode(py5.HSB, 360, 255, 255)
 
     for i in range(total):
         path.append(hilbert(i))
