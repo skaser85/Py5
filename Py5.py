@@ -18,6 +18,8 @@ class Py5():
         self.clock = pygame.time.Clock()
         self.width = 0
         self.height = 0
+        self.w2 = 0
+        self.h2 = 0
         self.screen_created = False
         self.screen = pygame.display.init()
         self.surface = None
@@ -116,6 +118,14 @@ class Py5():
         self.HSB = 'hsb'
 
 
+    def set_width(self, w):
+        self.width = w
+        self.w2 = w / 2
+
+    def set_height(self, h):
+        self.height = h
+        self.h2 = h / 2
+
     def create_screen(self, w=0, h=0, fullscreen=False):
         """
         Creates a window to draw on.
@@ -129,22 +139,22 @@ class Py5():
             pygame.display.set_icon(icon)
             display_info = pygame.display.Info()
             if fullscreen or w == self.FULLSCREEN:
-                self.width = display_info.current_w
-                self.height = display_info.current_h
+                self.set_width(display_info.current_w)
+                self.set_height(display_info.current_h)
                 self.screen = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
                 self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
                 self.redraw_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
             else:
                 if w == self.WINDOW_WIDTH:
-                    self.width = display_info.current_w
+                    self.set_width(display_info.current_w)
                 elif isinstance(w, int):
-                    self.width = w
+                    self.set_width(w)
                 else:
                     print(f'Py5 :: create_screen :: invalid value passed for the "w" agrument.  Got {w} which is neither an integer nor the constant WINDOW_WIDTH.')
                 if h == self.WINDOW_HEIGHT:
-                    self.height = display_info.current_h
+                    self.set_width(display_info.current_h)
                 elif isinstance(h, int):
-                    self.height = h
+                    self.set_height(h)
                 else:
                     print(f'Py5 :: create_screen :: invalid value passed for the "h" agrument.  Got {h} which is neither an integer nor the constant WINDOW_HEIGHT.')
                 self.screen = pygame.display.set_mode([self.width, self.height], pygame.RESIZABLE)
@@ -370,10 +380,12 @@ class Py5():
         if self._stroke:
             self.draw_circle_border((x, y), size)
 
-    def ellipse(self, x, y, size_x, size_y):
+    def ellipse(self, x, y, size_x, size_y=None):
         """
         Draws an ellipse.
         """
+        if size_y is None:
+            size_y = size_x
         x += self.translate_x
         y += self.translate_y
         size_x *= self.scl
@@ -667,6 +679,35 @@ class Py5():
     def window_resized(self, func):
         self.resize_func = func
 
+    def degrees(self, angle):
+        # if we want RADIANS, then just return the the angle
+        if self.ANGLE_MODE == self.DEGREES:
+            return angle *  self.RAD_TO_DEG
+        return angle
+
+    def radians(self, angle):
+        # if we want DEGREES, then just return the angle
+        if self.ANGLE_MODE == self.RADIANS:
+            return angle * self.DEG_TO_RAD
+        return angle
+
+    def random_width(self):
+        return self.random_int(self.width)
+
+    def random_height(self):
+        return self.random_int(self.height)
+
+    @staticmethod
+    def infinity():
+        return math.inf
+        
+    @staticmethod
+    def from_angle(angle, length=1):
+        """
+        Returns a new 2D vector from the passed-in angle.
+        """
+        return Vector(length * math.cos(angle), length * math.sin(angle))
+
     @staticmethod
     def log_print(msg, name, file):
         # do some kind of log, too?
@@ -709,7 +750,7 @@ class Py5():
             return Py5.constrain(new_val, stop2, start2)
 
     @staticmethod
-    def create_vector(x, y, z=0):
+    def create_vector(x=0, y=0, z=0):
         """
         Returns a Vector based on the values passed in.
         """
@@ -819,8 +860,8 @@ class Py5():
                     elif event.type == pygame.MOUSEBUTTONUP:
                         self.MOUSE_BUTTON_UP = True
                     elif event.type == pygame.VIDEORESIZE:
-                        self.width = event.w
-                        self.height = event.h
+                        self.set_width(event.w)
+                        self.set_height(event.h)
                         self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                         self.surface = pygame.Surface((event.w, event.h), pygame.SRCALPHA)
                         self.redraw_surface = pygame.Surface((event.w, event.h), pygame.SRCALPHA)
