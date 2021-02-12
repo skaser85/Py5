@@ -21,7 +21,8 @@ class Particle():
                         record = d
                         closest = pt
             if closest:
-                self.py5.stroke(self.py5.random_int(100), self.py5.random_int(100), self.py5.random_int(100))
+                self.py5.stroke(255, 255, 255, 100)
+                # self.py5.stroke(self.py5.random_int(100), self.py5.random_int(100), self.py5.random_int(100))
                 self.py5.line(self.pos.x, self.pos.y, closest.x, closest.y)
 
     def update(self, x, y):

@@ -461,8 +461,8 @@ class Py5():
         # temp = None
         # self.draw_line_alpha_test(line_rect, x1, y1, x2, y2)
         # print(self.stroke_color)
-        pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
-        # self.draw_line_alpha(line, x1, y1, x2, y2)
+        line = pygame.draw.line(self.surface, self.stroke_color, (x1, y1), (x2, y2), self.stroke_size)
+        self.draw_line_alpha(line, x1, y1, x2, y2)
 
     def draw_line_alpha_test(self, line_rect, x1, y1, x2, y2):
         shape_surf = pygame.Surface((line_rect.w, line_rect.h), pygame.SRCALPHA)
