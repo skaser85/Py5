@@ -21,15 +21,30 @@ def setup():
     global walls
     global ray
     global particle
-    py5.create_screen(400, 400)
+    py5.create_screen(800, 800)
     for i in range(5):
         x1 = py5.random_width()
         x2 = py5.random_width()
         y1 = py5.random_height()
         y2 = py5.random_height()
         walls.append(Boundary(py5, x1, y1, x2, y2))
+    walls.append(Boundary(py5, 0, 0, py5.width, 0))
+    walls.append(Boundary(py5, py5.width, 0, py5.width, py5.height))
+    walls.append(Boundary(py5, py5.width, py5.height, 0, py5.height))
+    walls.append(Boundary(py5, 0, py5.height, 0, 0))
     ray = Ray(py5, 100, 200)
-    particle = Particle(py5, 200, 200)
+    particle = Particle(py5, py5.w2, py5.h2)
+
+def handle_resize():
+    global walls
+    global ray
+    global particle
+    walls = []
+    ray = None
+    particle = None
+    setup()
+
+py5.window_resized(handle_resize)
 
 @py5.draw
 def draw():
@@ -39,16 +54,15 @@ def draw():
     m = py5.get_mouse_pos()
     for wall in walls:
         wall.show()
-    x = open_simplex.noise2d(x_off * py5.width, particle.pos.y)
-    y = open_simplex.noise2d(particle.pos.x, y_off * py5.height)
-    # print(x, y)
-    particle.update(m.x, m.y)
+    # x = open_simplex.noise2d(x_off * py5.width, particle.pos.y)
+    # y = open_simplex.noise2d(particle.pos.x, y_off * py5.height)
     # particle.update_noise(x, y)
+    # x_off += 1000000.01
+    # y_off += 1000000.01
+    particle.update(m.x, m.y)
     particle.show()
     particle.look(walls)
     
-    x_off += 1000000.01
-    y_off += 1000000.01
 
 setup()
 draw()

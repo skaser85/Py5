@@ -14,14 +14,13 @@ class Particle():
             closest = None
             record = self.py5.infinity()
             for wall in walls:
-                pt = ray.cast(wall)
+                pt, u = ray.cast(wall)
                 if pt:
                     d = self.py5.dist(self.pos.x, self.pos.y, pt.x, pt.y)
                     if d < record:
                         record = d
                         closest = pt
             if closest:
-
                 self.py5.stroke(self.py5.random_int(100), self.py5.random_int(100), self.py5.random_int(100))
                 self.py5.line(self.pos.x, self.pos.y, closest.x, closest.y)
 

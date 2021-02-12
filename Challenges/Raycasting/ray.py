@@ -19,19 +19,17 @@ class Ray():
         x4 = self.pos.x + self.dir.x
         y4 = self.pos.y + self.dir.y
 
+        pt = self.py5.create_vector()
         den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
         if den == 0:
-            return None
+            return pt, 0
         t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den
         u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den
 
         if t > 0 and t < 1 and u > 0:
-            pt = self.py5.create_vector()
             pt.x = x1 + t * (x2 - x1)
             pt.y = y1 + t * (y2 - y1)
-            return pt
-        else:
-            return False
+        return pt, u
 
 
     def show(self):
