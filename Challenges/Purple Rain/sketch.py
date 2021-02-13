@@ -44,7 +44,7 @@ class Splash():
         if self.y < self.py5.height - self.weight * 2:
             self.reverse = True
         if self.reverse:
-            self.y += 1
+            self.y += 0.75
         else:
             self.y -= 2
 
