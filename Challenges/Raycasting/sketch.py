@@ -38,7 +38,7 @@ def setup():
 def handle_resize():
     global walls
     global ray
-    global particle
+    global particle1
     walls = []
     ray = None
     particle = None
