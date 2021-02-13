@@ -173,7 +173,13 @@ class Py5():
         if g is not None and b is not None:
             self.background_color = (r, g, b)
         else:
-            self.background_color = (r, r, r)
+            if isinstance(r, tuple):
+                if len(r) == 3:
+                    self.background_color = pygame.Color(r[0], r[1], r[2])
+                elif len(r) == 4:
+                    self.background_color = pygame.Color(r[0], r[1], r[2], r[3])
+            else:
+                self.background_color = pygame.Color(r, r, r)
 
     def no_loop(self):
         self.should_loop = False
