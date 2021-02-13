@@ -83,6 +83,7 @@ class Py5():
         self.UP_ARROW = pygame.K_UP
         self.LEFT_ARROW = pygame.K_LEFT
         self.RIGHT_ARROW = pygame.K_RIGHT
+        self.SPACE = pygame.K_SPACE
         self.ENTER = 13
         self.ESCAPE = 27
         self.OPTION = 18
