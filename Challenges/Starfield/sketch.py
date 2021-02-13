@@ -44,7 +44,7 @@ class Star():
         self.py5.stroke_weight(1)
         self.py5.line(px, py, sx, sy)
         self.pz = self.z
-    
+
 stars = []
 
 def setup():
@@ -57,7 +57,7 @@ def setup():
 def draw():
     py5.background(0)
     m = py5.get_mouse_pos()
-    speed = py5.map(m.x, 0, py5.width, 0, 50)
+    speed = py5.map(m.x, 0, py5.width, 1, 30)
     for star in stars:
         star.update(speed)
         star.show()
