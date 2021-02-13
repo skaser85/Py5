@@ -372,7 +372,7 @@ class Py5():
         if mode in ['corner', 'center']:
             self.RECT_MODE = mode
 
-    def circle(self, x, y, size):
+    def circle(self, x, y, size=0):
         """
         Draws a circle.
         """
@@ -387,7 +387,7 @@ class Py5():
         if self._stroke:
             self.draw_circle_border((x, y), size)
 
-    def ellipse(self, x, y, size_x, size_y=None):
+    def ellipse(self, x, y, size_x=None, size_y=None):
         """
         Draws an ellipse.
         """
@@ -740,10 +740,18 @@ class Py5():
         return math.ceil(val)
 
     @staticmethod
-    def dist(x1, y1, x2, y2):
+    def dist(x1, y1, x2=None, y2=None):
         """
-        Returns the distance between the two points passed in.
+        Returns the distance between the two points passed in.  This will accept two Vectors
+        as the first two arguments.
         """
+        if isinstance(x1, Vector) and isinstance(y1, Vector):
+            p1 = x1
+            p2 = y1
+            x1 = p1.x
+            y1 = p1.y
+            x2 = p2.x
+            y2 = p2.y
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
     @staticmethod
