@@ -71,7 +71,6 @@ class Cell():
         self.py5.fill(0, 255, 0, 255)
         self.py5.rect(x, y, w, w)
 
-
 cols = 0
 rows = 0
 w = 20
